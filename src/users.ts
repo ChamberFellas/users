@@ -1,7 +1,7 @@
 import mongoose, { Types } from "mongoose";
 import {connectDB, disconnectDB} from "./database";
-import { privateEncrypt } from "crypto";
 export const testing = false;
+import * as this_module from "./users";
 
 if (!testing){
     connectDB();
@@ -263,7 +263,7 @@ async function find_owner( houseID: Types.ObjectId){
 async function is_owner( houseID: Types.ObjectId, userID: Types.ObjectId){
 
     try{
-        const owner = await find_owner(houseID);
+        const owner = await this_module.find_owner(houseID);
         return (owner == userID);
     }
     catch(error){
@@ -277,11 +277,12 @@ async function is_owner( houseID: Types.ObjectId, userID: Types.ObjectId){
 async function is_in_house(houseID: Types.ObjectId, userID: Types.ObjectId){
 
     try{
-        const all_members = await get_all_users_in_house(houseID);
+        const all_members = await this_module.get_all_users_in_house(houseID);
         return all_members?.includes(String(userID));
     }
     catch(error){
         console.log("is_in_house function failed", error);
+        return false;
     }
 }
 
@@ -290,12 +291,12 @@ async function is_in_house(houseID: Types.ObjectId, userID: Types.ObjectId){
 const change_owner = async (newOwnerID: Types.ObjectId , houseID: Types.ObjectId) => {
 
     try{
-        const current_owner = await find_owner(houseID);
+        const current_owner = await this_module.find_owner(houseID);
 
-        if (!is_in_house(houseID, newOwnerID)){
+        if (! await this_module.is_in_house(houseID, newOwnerID)){
             console.log("change_owner function failed: new owner must be in house");
         }
-        else if (current_owner == newOwnerID){
+        else if (current_owner && current_owner.equals(newOwnerID)){
             console.log("change_owner function failed: new owner cannot be the same as old owner");
         }
         else{
@@ -314,12 +315,12 @@ const change_owner = async (newOwnerID: Types.ObjectId , houseID: Types.ObjectId
 
 const remove_user_from_house = async (userID: Types.ObjectId, houseID: Types.ObjectId, ) =>{
 
-    const current_owner = await find_owner(houseID);
+    const current_owner = await Promise.resolve(this_module.find_owner(houseID));
+    console.log("result is ", await this_module.is_in_house(houseID,userID));
+    console.log("result is ", ! await this_module.is_in_house(houseID,userID));
 
     try{
-
-
-        if(!is_in_house(houseID, userID)){
+        if(! await this_module.is_in_house(houseID, userID)){
             console.log("remove_user_from_house failed: user to be removed must be in house");
         }
         else if(current_owner && current_owner.equals(userID)){

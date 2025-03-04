@@ -11,7 +11,6 @@ import * as users from "../../users";
 
 // ### USER FUNCTION TESTING ###
 
-
 describe ("Validate Email", () =>{
     beforeEach(() => {
         jest.clearAllMocks();
@@ -64,11 +63,7 @@ describe ("Validate Email", () =>{
         
     })
 
-
-
 });
-
-
 
 describe ("create user fucntions", () => {
 
@@ -363,17 +358,123 @@ describe ("house creation", async () => {
 
 */
 
-
-
 // todo:
 // find owner
-// get all owners
+
 // is owner
+
+describe("is owner", () => {
+
+    let member: Types.ObjectId;
+    let owner: Types.ObjectId;
+    let house_1: Types.ObjectId;
+    let house_2: Types.ObjectId;
+
+    beforeEach(() => {
+
+        jest.restoreAllMocks();
+
+        member = new Types.ObjectId("abcdefabcdefabcdefabcdef");
+        owner = new Types.ObjectId("111222333444555666777888");
+        house_1 = new Types.ObjectId("888777666555444333222111");
+        house_2 = new Types.ObjectId("aaaabbbbccccddddeeeeffff");
+
+        jest.spyOn(users, "find_owner").mockImplementation(
+            async(house_id) => {
+                if(house_id.equals(house_1)){
+                    return owner;
+                }
+                else{
+                    return null;
+                }
+            }
+        )
+    })
+
+    test("return true on valid house and correct owner", async () => {
+
+        const result = await users.is_owner(house_1, owner);
+        expect(result).toBe(true);
+
+    })
+    test("return false on valid house and incorrect owner", async () => {
+
+        const result = await users.is_owner(house_1, member);
+        expect(result).toBe(false);
+
+    })
+    test("return false on invalid house", async () => {
+
+        const result = await users.is_owner(house_2, owner);
+        expect(result).toBe(false);
+
+    })
+
+})
+
 // is in house
+
+describe("is in house", () => {
+
+    let members_1: string[];
+    let house_1: Types.ObjectId;
+    let members_2: string[];
+    let house_2: Types.ObjectId;
+
+    let not_in_house: Types.ObjectId;
+    let in_house: Types.ObjectId;
+
+    beforeEach(() => {
+
+        members_1 = [
+            "abcdefabcdefabcdefabcdef",
+            "123456123456123456123456",
+            "111122223333444455556666",
+            "123456789123456789abcdef"
+        ];
+        members_2 = [];
+        house_1 = new Types.ObjectId("abcdef123456789123456789");
+        house_2 = new Types.ObjectId("888777666555444333222111");
+        
+        not_in_house = new Types.ObjectId("aaaabbbbccccddddeeeeffff");
+        in_house = new Types.ObjectId("123456789123456789abcdef");
+
+        jest.spyOn(users, "get_all_users_in_house").mockImplementation(
+            async (house_id) => {
+                if(house_id.equals(house_1)){
+                    return members_1;
+                }
+                else{
+                    return members_2;
+                }
+            }
+        )
+    })
+
+    test("User is in house", async () => {
+        const result = await users.is_in_house(house_1, in_house);
+        expect(result).toBe(true);
+    });
+
+    test("User is not in house", async () => {
+        const result = await users.is_in_house(house_1, not_in_house);
+        expect(result).toBe(false);
+    });
+
+    test("House with no members", async () => {
+        const result = await users.is_in_house(house_2, in_house);
+        expect(result).toBe(false);
+    });
+
+})
+
+
 // change owner
+
+
 // remove user
 
-describe("remove user", () => {
+describe("remove user and change owner", () => {
 
     var mock_owner_id = new Types.ObjectId("abcdefabcdefabcdefabcdef")
     var mock_member_id = new Types.ObjectId("123456789123456789abcdef")
@@ -424,12 +525,12 @@ describe("remove user", () => {
         )
         
         jest.spyOn(users.membersInHouse, "deleteOne").mockResolvedValue({deletedCount: 1} as any);
+        jest.spyOn(users.house, "updateOne").mockResolvedValue({modifiedCount: 1} as any);
     })
 
     test("Successfully removes user when member and not owner of house", async () =>{
 
         const result = await users.remove_user_from_house(mock_member_id,mock_house_id);
-        console.log(result);
         expect(delete_mock).toHaveBeenCalledWith({houseID: mock_house_id, userID: mock_member_id});
         
     })
@@ -444,6 +545,25 @@ describe("remove user", () => {
         await users.remove_user_from_house(mock_owner_id,mock_house_id);
         expect(log_spy).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed cannot be owner of house");
         expect(users.membersInHouse.deleteOne).not.toHaveBeenCalled();
+    })
+
+    test("success to change owner on valid data", async() => {
+
+        await users.change_owner(mock_member_id, mock_house_id);
+        expect(users.house.updateOne).toHaveBeenCalledTimes(1);
+
+    })
+
+    test("fail to change owner if member is not in house", async() => {
+        await users.change_owner(mock_not_in_house_id, mock_house_id);
+        expect(log_spy).toHaveBeenCalledWith("change_owner function failed: new owner must be in house")
+        expect(users.house.updateOne).not.toHaveBeenCalled();
+    })
+
+    test("fail to change owner if new owner is the same old owner", async() => {
+        await users.change_owner(mock_owner_id, mock_house_id);
+        expect(log_spy).toHaveBeenCalledWith("change_owner function failed: new owner cannot be the same as old owner")
+        expect(users.house.updateOne).not.toHaveBeenCalled();
     })
 })
 
