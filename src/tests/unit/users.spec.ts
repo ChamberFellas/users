@@ -1,0 +1,449 @@
+// importing user related functions
+
+import { Types } from "mongoose";
+//import {user, validate_email, validate_names,  create_user, change_first_name, change_last_name, change_email}  from "../../users" ;
+//import {house, membersInHouse, create_house, delete_house, get_all_users_in_house, find_owner, is_owner, is_in_house, change_owner, remove_user_from_house} from "../../users"
+import * as users from "../../users";
+
+// importing schemas
+
+// importing house related functions
+
+// ### USER FUNCTION TESTING ###
+
+
+describe ("Validate Email", () =>{
+    beforeEach(() => {
+        jest.clearAllMocks();
+        Object.defineProperty(users, "testing", { value: true });
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    //VALIDATE EMAILS
+
+    test("Returns true when typical valid email passed in", async () => {
+
+        jest.spyOn(users.user, "findOne").mockResolvedValue(null);
+        const valid_email = await users.validate_email("xyz12345@bath.ac.uk");
+        await expect(valid_email).toBe(true);
+
+    });
+
+    test("returns true when both uppercase and lowercase used", async() => {
+
+        jest.spyOn(users.user, "findOne").mockResolvedValue(null);
+        const valid_email = await users.validate_email("UPPERCASEandlowercase@gmail.com");
+        await expect(valid_email).toBe(true);
+        
+    })
+
+    test("return false if email contains non-standard symbols", async() => {
+
+        jest.spyOn(users.user, "findOne").mockResolvedValue(null);
+        const valid_email = await users.validate_email("symbols/are/bad@gmail.com");
+        await expect(valid_email).toBe(false);
+        
+    })
+
+    test("return false if domain name is badly structured", async() => {
+
+        jest.spyOn(users.user, "findOne").mockResolvedValue(null);
+        const valid_email = await users.validate_email("baddomain@outlook..com");
+        await expect(valid_email).toBe(false);
+        
+    })
+
+    test("return false if email is valid but already exists in database", async() => {
+
+        jest.spyOn(users.user, "findOne").mockResolvedValue("john@example.com");
+        const valid_email = await users.validate_email("john@example.com");
+        await expect(valid_email).toBe(false);
+        
+    })
+
+
+
+});
+
+
+
+describe ("create user fucntions", () => {
+
+    var valid_data = {firstName: "Logan",lastName: "Paul",email: "whatsuplogang420@gmail.com"};
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        Object.defineProperty(users, "testing", { value: true });
+        jest.spyOn(users.user, "create").mockResolvedValue({_id: "mockid", ...valid_data} as any);
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        valid_data = {firstName: "Logan",lastName: "Paul",email: "whatsuplogang420@gmail.com"};
+    })
+
+    test("Account created when all parameters are valid", async () => {
+
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).toHaveBeenCalledWith(expect.objectContaining(valid_data));
+        
+    })
+
+    test("Account not created when firstname too short", async () => {
+
+        valid_data.firstName = "";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+
+    test("Account not created when firstname contains numbers or symbols", async () => {
+
+        valid_data.firstName = "symbol$$";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+
+        valid_data.firstName = "number123";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+
+
+    test("Account created when firstname 15 letters long (on boundary)", async () => {
+
+        valid_data.firstName = "aaabbbcccdddeee";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).toHaveBeenCalledWith(expect.objectContaining(valid_data));
+        
+    })
+
+    test("Account not created when firstname 16 letters long (past boundary)", async () => {
+
+        valid_data.firstName = "aaabbbcccdddeeef";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+
+    test("Account not created when lastname too short", async () => {
+
+        valid_data.lastName = "";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+
+    test("Account created when lastname 15 letters long (on boundary)", async () => {
+
+        valid_data.lastName = "aaabbbcccdddeee";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).toHaveBeenCalledWith(expect.objectContaining(valid_data));
+        
+    })
+
+    test("Account not created when lastname 16 letters long (past boundary)", async () => {
+
+        valid_data.lastName = "aaabbbcccdddeeef";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+
+    test("Account not created when lastname contains numbers or symbols", async () => {
+
+        valid_data.lastName = "symbol$$";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+
+        valid_data.lastName = "number123";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+
+    test("Account not created when email is bad", async () => {
+
+        valid_data.email = "invalidemail";
+        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
+        expect(users.user.create).not.toHaveBeenCalled();
+        
+    })
+    
+})
+
+describe ("Change parameters", () => {
+
+    var valid_data = {firstName: "Logan",lastName: "Paul",email: "whatsuplogang420@gmail.com"};
+    var mock_id = new Types.ObjectId("123456789abcdef123456789");
+    var new_first_name = "Jake";
+    var new_last_name = "Nagol"
+    var new_email = "maverick4ever@gmail.com"
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        Object.defineProperty(users, "testing", { value: true });
+        jest.spyOn(users.user, "create").mockResolvedValue({_id: "mockid", ...valid_data} as any);
+        jest.spyOn(users.user, "findOneAndUpdate").mockResolvedValue({
+            _id: mock_id, 
+            firstName: new_first_name
+        } as any);
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        valid_data = {firstName: "Logan",lastName: "Paul",email: "whatsuplogang420@gmail.com"};
+        var mock_id = new Types.ObjectId("123456789abcdef123456789");
+        var new_first_name = "Jake";
+        var new_last_name = "Nagol"
+        var new_email = "maverick4ever@gmail.com"
+    })
+
+    test("firstName change successful on valid data", async () => {
+
+        await users.change_first_name(mock_id, new_first_name);
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+    })
+
+    test("firstName change fail on invalid data", async () => {
+
+        new_first_name = "";
+
+        await users.change_first_name(mock_id, new_first_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+        new_first_name = "abcdefghijklmnopqrstuvwxyz";
+
+        await users.change_first_name(mock_id, new_first_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+        new_first_name = "*symbol*";
+
+        await users.change_first_name(mock_id, new_first_name)
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+        new_first_name = "numb3rs";
+
+        await users.change_first_name(mock_id, new_first_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+        
+    })
+
+    test("firstName change fail if it is the same as old name", async() => {
+        new_first_name = "Logan";
+        await users.change_first_name(mock_id, new_first_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+    })
+
+    test("lastName change successful on valid data", async() => {
+
+        await users.change_last_name(mock_id, new_last_name);
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+    })
+
+    test("LastName change fails on invalid data", async () => {
+
+        await users.change_last_name(mock_id, new_last_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+        new_last_name = "abcdefghijklmnopqrstuvwxyz";
+
+        await users.change_last_name(mock_id, new_last_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+        new_last_name = "*symbol*";
+
+        await users.change_last_name(mock_id, new_last_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+        new_last_name = "numb3rs";
+
+        await users.change_last_name(mock_id, new_last_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+
+    })
+
+    test("lastName change fail if it is the same as old name", async() => {
+        new_last_name = "Paul";
+        await users.change_first_name(mock_id, new_last_name);
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+    })
+
+    test("email change successful on valid data", async () => {
+
+        await users.change_email(mock_id, new_email);
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+
+    })
+
+    test("email change fails on invalid data", async () => {
+
+        new_email = "notgoodemail"
+        await users.change_email(mock_id, new_email);
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+
+        new_email = "doesn'tcontainsymbols@yahoo.com";
+        await users.change_email(mock_id, new_email);
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+
+        new_email = "";
+        await users.change_email(mock_id, new_email);
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+
+    })
+
+})
+
+/*
+
+describe ("house creation", async () => {
+
+    var mock_owner = new Types.ObjectId("123456789abcdef123456789");
+
+    var valid_house_data = {ownerID: mock_owner, houseName: "Example House" };
+    var valid_members_in_house_data = {houseID: new Types.ObjectId("987654321abcdef987654321"), userID: mock_owner}
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        Object.defineProperty(users, "testing", { value: true });
+        jest.spyOn(users.house, "create").mockResolvedValue({_id: "mockid1", ...valid_house_data} as any);
+        jest.spyOn(users.membersInHouse, "create").mockResolvedValue({_id: "mockid2", ...valid_members_in_house_data} as any)
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        var valid_data = {ownerID: new Types.ObjectId("123456789abcdef123456789"), houseName: "Example House" };
+    })
+
+    test ("Create house successfuly when valid data enetered", async () => {
+
+        await create_house(valid_house_data.ownerID, valid_house_data.houseName); // initial data
+        expect(house.create).toHaveBeenCalledWith(expect.objectContaining(valid_house_data))
+        expect(membersInHouse.create).toHaveBeenCalledWith(expect.objectContaining(valid_members_in_house_data))
+
+        valid_house_data.houseName = "z";
+
+        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(house.create).not.toHaveBeenCalled()
+        expect(membersInHouse.create).not.toHaveBeenCalled()
+
+        valid_house_data.houseName = "aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjj"; // length 50
+
+        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(house.create).not.toHaveBeenCalled()
+        expect(membersInHouse.create).not.toHaveBeenCalled()
+
+        valid_house_data.houseName = "numb3rs and $ymbol$ are fine";
+
+        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(house.create).not.toHaveBeenCalled()
+        expect(membersInHouse.create).not.toHaveBeenCalled()
+
+    })
+    
+    test ("Create house fails when invalid data entered", async () => {
+
+        valid_house_data.houseName = "";
+
+        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(house.create).not.toHaveBeenCalled()
+        expect(membersInHouse.create).not.toHaveBeenCalled()
+
+        valid_house_data.houseName = "aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjjk"; // length 51
+
+        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(house.create).not.toHaveBeenCalled()
+        expect(membersInHouse.create).not.toHaveBeenCalled()
+
+    })
+})
+
+*/
+
+
+
+// todo:
+// find owner
+// get all owners
+// is owner
+// is in house
+// change owner
+// remove user
+
+describe("remove user", () => {
+
+    var mock_owner_id = new Types.ObjectId("abcdefabcdefabcdefabcdef")
+    var mock_member_id = new Types.ObjectId("123456789123456789abcdef")
+    var mock_not_in_house_id = new Types.ObjectId("aaaaaabbbbbbccccccdddddd")
+    var mock_house_id = new Types.ObjectId("abcdef123456789123456789")
+    const log_spy = jest.spyOn(global.console, "log");
+    const is_in_house_mock = jest.spyOn(users, "is_in_house").mockImplementation(
+        async (house_id, user_id) => {
+            if (house_id.equals(mock_house_id) && (user_id.equals(mock_member_id) || user_id.equals(mock_owner_id))){ // in house
+                return true;
+            }
+            else if (house_id.equals(mock_house_id) && user_id.equals(mock_not_in_house_id)){ // not in house
+                return false;
+            }
+            else{
+                return false;
+            }
+        }
+    )
+    const find_owner_mock = jest.spyOn(users, "find_owner").mockResolvedValue(mock_owner_id);
+    const delete_mock = jest.spyOn(users.membersInHouse, "deleteOne").mockResolvedValue({deletedCount: 1} as any);
+
+    beforeEach(() => {
+
+        jest.clearAllMocks();
+
+        var mock_owner_id = new Types.ObjectId("abcdefabcdefabcdefabcdef")
+        var mock_member_id = new Types.ObjectId("123456789123456789abcdef")
+        var mock_not_in_house_id = new Types.ObjectId("aaaaaabbbbbbccccccdddddd")
+        var mock_house_id = new Types.ObjectId("abcdef123456789123456789")
+
+        Object.defineProperty(users, "testing", { value: true });
+
+        jest.spyOn(users, "find_owner").mockResolvedValue(mock_owner_id);
+
+        jest.spyOn(users, "is_in_house").mockImplementation(
+            async (house_id, user_id) => {
+                if (house_id.equals(mock_house_id) && (user_id.equals(mock_member_id) || user_id.equals(mock_owner_id))){ // in house
+                    return true;
+                }
+                else if (house_id.equals(mock_house_id) && user_id.equals(mock_not_in_house_id)){ // not in house
+                    return false;
+                }
+                else{
+                    return false;
+                }
+            }
+        )
+        
+        jest.spyOn(users.membersInHouse, "deleteOne").mockResolvedValue({deletedCount: 1} as any);
+    })
+
+    test("Successfully removes user when member and not owner of house", async () =>{
+
+        const result = await users.remove_user_from_house(mock_member_id,mock_house_id);
+        console.log(result);
+        expect(delete_mock).toHaveBeenCalledWith({houseID: mock_house_id, userID: mock_member_id});
+        
+    })
+
+    test("fail to remove user if userid not in house", async () => {
+        await users.remove_user_from_house(mock_not_in_house_id,mock_house_id);
+        expect(log_spy).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed must be in house");
+        expect(users.membersInHouse.deleteOne).not.toHaveBeenCalled();
+    })
+
+    test("fail to remove user if user is owner", async () => {
+        await users.remove_user_from_house(mock_owner_id,mock_house_id);
+        expect(log_spy).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed cannot be owner of house");
+        expect(users.membersInHouse.deleteOne).not.toHaveBeenCalled();
+    })
+})
+
