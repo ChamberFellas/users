@@ -5,6 +5,7 @@ import { Types } from "mongoose";
 //import {house, membersInHouse, create_house, delete_house, get_all_users_in_house, find_owner, is_owner, is_in_house, change_owner, remove_user_from_house} from "../../users"
 import * as users from "../../users";
 
+
 // importing schemas
 
 // importing house related functions
@@ -292,71 +293,80 @@ describe ("Change parameters", () => {
 
 })
 
-/*
 
-describe ("house creation", async () => {
+
+describe ("house creation", () => {
 
     var mock_owner = new Types.ObjectId("123456789abcdef123456789");
 
-    var valid_house_data = {ownerID: mock_owner, houseName: "Example House" };
-    var valid_members_in_house_data = {houseID: new Types.ObjectId("987654321abcdef987654321"), userID: mock_owner}
+    var valid_house_data = {ownerID: mock_owner, houseName: "Example House", dateCreated: new Date};
+    var valid_members_in_house_data = { userID: mock_owner, houseID: new Types.ObjectId("987654321abcdef987654321")}
 
     beforeEach(() => {
-        jest.clearAllMocks();
+
+        jest.restoreAllMocks();
+
         Object.defineProperty(users, "testing", { value: true });
         jest.spyOn(users.house, "create").mockResolvedValue({_id: "mockid1", ...valid_house_data} as any);
         jest.spyOn(users.membersInHouse, "create").mockResolvedValue({_id: "mockid2", ...valid_members_in_house_data} as any)
     })
 
-    afterEach(() => {
-        jest.restoreAllMocks();
-        var valid_data = {ownerID: new Types.ObjectId("123456789abcdef123456789"), houseName: "Example House" };
-    })
-
     test ("Create house successfuly when valid data enetered", async () => {
 
-        await create_house(valid_house_data.ownerID, valid_house_data.houseName); // initial data
-        expect(house.create).toHaveBeenCalledWith(expect.objectContaining(valid_house_data))
-        expect(membersInHouse.create).toHaveBeenCalledWith(expect.objectContaining(valid_members_in_house_data))
+        await users.create_house(valid_house_data.ownerID, valid_house_data.houseName); // initial data
+        expect(users.house.create).toHaveBeenCalledTimes(1)
+        expect(users.membersInHouse.create).toHaveBeenCalledTimes(1)
+        
+        jest.restoreAllMocks()
+    })
 
+    test ("Single letter house name is valid", async () => {
         valid_house_data.houseName = "z";
 
-        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
-        expect(house.create).not.toHaveBeenCalled()
-        expect(membersInHouse.create).not.toHaveBeenCalled()
+        await users.create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(users.house.create).toHaveBeenCalledTimes(1)
+        expect(users.membersInHouse.create).toHaveBeenCalledTimes(1)
+
+        
+    })
+
+    test ("Length 50 house name is valid", async() => {
 
         valid_house_data.houseName = "aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjj"; // length 50
 
-        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
-        expect(house.create).not.toHaveBeenCalled()
-        expect(membersInHouse.create).not.toHaveBeenCalled()
+        await users.create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(users.house.create).toHaveBeenCalledTimes(1)
+        expect(users.membersInHouse.create).toHaveBeenCalledTimes(1)
+
+    })
+
+    test("Numbers and symbols permitted in house names", async () => {
 
         valid_house_data.houseName = "numb3rs and $ymbol$ are fine";
 
-        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
-        expect(house.create).not.toHaveBeenCalled()
-        expect(membersInHouse.create).not.toHaveBeenCalled()
+        await users.create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(users.house.create).toHaveBeenCalledTimes(1)
+        expect(users.membersInHouse.create).toHaveBeenCalledTimes(1)
 
     })
+
     
     test ("Create house fails when invalid data entered", async () => {
 
         valid_house_data.houseName = "";
 
-        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
-        expect(house.create).not.toHaveBeenCalled()
-        expect(membersInHouse.create).not.toHaveBeenCalled()
+        await users.create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(users.house.create).not.toHaveBeenCalled()
+        expect(users.membersInHouse.create).not.toHaveBeenCalled()
 
         valid_house_data.houseName = "aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjjk"; // length 51
 
-        await create_house(valid_house_data.ownerID, valid_house_data.houseName);
-        expect(house.create).not.toHaveBeenCalled()
-        expect(membersInHouse.create).not.toHaveBeenCalled()
+        await users.create_house(valid_house_data.ownerID, valid_house_data.houseName);
+        expect(users.house.create).not.toHaveBeenCalled()
+        expect(users.membersInHouse.create).not.toHaveBeenCalled()
 
     })
 })
-
-*/
 
 // todo:
 // find owner
