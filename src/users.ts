@@ -30,9 +30,10 @@ const house = mongoose.model('House', houseSchema);
 const membersInHouse = mongoose.model('membersInHouse', membersInHouseSchema);
 
 async function validate_email(email: string) {
-    const email_already_exists = await user.findOne({ email }); // ensure email is unique
-    const pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/; // https://www.zerobounce.net/email-guides/email-validation-javascript/
-    return (pattern.test(email) && !email_already_exists);
+    const email_already_exists = !!(await user.findOne({ email }));
+    console.log(email_already_exists)
+    const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
 }
 
 function validate_names(name: string){ // ensure name does not contain numbers or symbols
@@ -192,6 +193,7 @@ const create_house = async (ownerID: Types.ObjectId, houseName: string) => {
             console.log("create house function failed: invalid houseName");
         }
         else{
+            console.log("made it here :D")
             const new_house = await house.create(house_data);
             const houseID = new_house._id;
     
