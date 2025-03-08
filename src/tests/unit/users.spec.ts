@@ -509,7 +509,7 @@ describe("remove user and change owner", () => {
 
     beforeEach(() => {
 
-        jest.clearAllMocks();
+        jest.restoreAllMocks();
 
         var mock_owner_id = new Types.ObjectId("abcdefabcdefabcdefabcdef")
         var mock_member_id = new Types.ObjectId("123456789123456789abcdef")
