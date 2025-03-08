@@ -2,6 +2,7 @@ import mongoose, { Types } from "mongoose";
 import {connectDB, disconnectDB} from "./database";
 export const testing = false;
 import * as this_module from "./users";
+import { transpileModule } from "typescript";
 
 if (!testing){
     connectDB();
@@ -133,6 +134,8 @@ async function change_email(userID: Types.ObjectId, new_email: string){
     }
 }
 
+/*
+
 const delete_user = async (userID: Types.ObjectId) => {
 
     try{
@@ -146,7 +149,7 @@ const delete_user = async (userID: Types.ObjectId) => {
 
         // Code is meant to ensure that the user being deleted is not an owner of a house
 
-        /*
+        
 
         const belongs_to_house = await membersInHouse.find(
             {userID: userID},
@@ -164,7 +167,7 @@ const delete_user = async (userID: Types.ObjectId) => {
             }
         }
 
-        */
+        
         if (!is_an_owner){
             const result = await user.deleteOne({_id: userID});
             console.log("User successfully deleted");
@@ -174,6 +177,37 @@ const delete_user = async (userID: Types.ObjectId) => {
         console.log("delete_user function failed",error);
     }
 }
+
+*/
+
+async function delete_user(user_id: Types.ObjectId){
+
+    const house_ids = await membersInHouse.find({user_id: user_id}).select("house_id").lean()
+    let is_an_owner = false;
+
+    try{
+        for (let i = 0; i < house_ids.length; i++){
+
+            if (await is_owner(house_ids[i].houseID as any, user_id)){
+                is_an_owner = true
+                break;
+            }
+        }
+    
+        if (!is_an_owner){
+            const result_membersinhouse = await membersInHouse.deleteMany({user_id:user_id})
+            const result_user = await user.deleteOne({_id: user_id})
+            console.log("User successfully deleted");
+        }
+        else{
+            console.log("delete_user function failed: user to be deleted cannot be owner of house");
+        }
+    }
+    catch(error){
+        console.log("delete_user function failed",error);
+    } 
+}
+
 
 export {user,validate_email, validate_names, create_user, change_first_name, change_last_name, change_email};
 
@@ -211,16 +245,28 @@ const create_house = async (ownerID: Types.ObjectId, houseName: string) => {
 
 // delete house
 
-const delete_house = async (houseID: Types.ObjectId) => {
+
+async function delete_house(house_id: Types.ObjectId){
 
     try{
-        const result = await house.deleteOne({houseID: houseID});
-        console.log("house successfully deleted");
+        // remove all instances in memberInHouse
+        // remove house
+
+        const result_members = await membersInHouse.deleteMany(
+            {house_id:house_id}
+        );
+        const result_house = await house.deleteMany(
+            {_id: house_id}
+        )
+        console.log("User successfully deleted");
     }
-    catch(error){
-        console.log("delete_house functon failed",error);
+    catch{
+        console.log("delete_user function failed: user to be deleted cannot be owner of house");
     }
+
 }
+
+// get all users in house
 
 async function get_all_users_in_house (houseID: Types.ObjectId){
 
