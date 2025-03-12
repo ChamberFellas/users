@@ -76,7 +76,9 @@ async function create_user(firstName: string, lastName: string, email: string){
 async function change_first_name(userID: Types.ObjectId, new_first_name: string){
     try{
 
-        if (new_first_name.length < 1 || new_first_name.length > 15 || !validate_names(new_first_name) || await user.findById(userID).equals(new_first_name) ){
+        const user_doc = await user.findById(userID)
+
+        if (new_first_name.length < 1 || new_first_name.length > 15 || !validate_names(new_first_name) || (user_doc && user_doc.firstName === (new_first_name) )){
             console.log("change_first_name function failed: new name is invalid")
         }
         else{
@@ -96,8 +98,10 @@ async function change_first_name(userID: Types.ObjectId, new_first_name: string)
 // change last name
 
 async function change_last_name(userID: Types.ObjectId, new_last_name: string){
+
     try{
-        if (new_last_name.length < 1 || new_last_name.length > 15 || !validate_names(new_last_name) || await user.findById(userID).equals(new_last_name)){
+        const user_doc = await user.findById(userID)
+        if (new_last_name.length < 1 || new_last_name.length > 15 || !validate_names(new_last_name) || (user_doc && user_doc.lastName === new_last_name)){
             console.log("change_last_name function failed: new name is invalid")
         }
         else{
