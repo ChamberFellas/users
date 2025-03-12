@@ -33,8 +33,8 @@ const membersInHouse = mongoose.model('membersInHouse', membersInHouseSchema);
 async function validate_email(email: string) {
     const email_already_exists = !!(await user.findOne({ email }));
     console.log(email_already_exists)
-    const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
+    const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+    return !email_already_exists && emailRegex.test(email);
 }
 
 function validate_names(name: string){ // ensure name does not contain numbers or symbols
