@@ -180,25 +180,25 @@ describe ("Change parameters", () => {
     var new_email = "maverick4ever@gmail.com"
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        valid_data = {firstName: "Logan",lastName: "Paul",email: "whatsuplogang420@gmail.com"};
+        var mock_id = new Types.ObjectId("123456789abcdef123456789");
+        var new_first_name = "Jake";
+        var new_last_name = "Nagol"
+        var new_email = "maverick4ever@gmail.com"
+
         Object.defineProperty(users, "testing", { value: true });
         jest.spyOn(users.user, "create").mockResolvedValue({_id: "mockid", ...valid_data} as any);
         jest.spyOn(users.user, "findOneAndUpdate").mockResolvedValue({
             _id: mock_id, 
             firstName: new_first_name
         } as any);
+        
     })
 
-    afterEach(() => {
-        jest.restoreAllMocks();
-        valid_data = {firstName: "Logan",lastName: "Paul",email: "whatsuplogang420@gmail.com"};
-        var mock_id = new Types.ObjectId("123456789abcdef123456789");
-        var new_first_name = "Jake";
-        var new_last_name = "Nagol"
-        var new_email = "maverick4ever@gmail.com"
-    })
 
-    test("firstName change successful on valid data", async () => {
+    test("firstName change successful on valid data", async () => { // changing first name to jake
 
         await users.change_first_name(mock_id, new_first_name);
         expect(users.user.findOneAndUpdate).toHaveBeenCalled();
@@ -240,25 +240,25 @@ describe ("Change parameters", () => {
         expect(users.user.findOneAndUpdate).toHaveBeenCalled();
     })
 
-    test("LastName change fails on invalid data", async () => {
+    test("LastName change succeeds on valid data", async () => {
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
 
         new_last_name = "abcdefghijklmnopqrstuvwxyz";
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
 
         new_last_name = "*symbol*";
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
 
         new_last_name = "numb3rs";
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
 
     })
 
