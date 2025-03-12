@@ -364,8 +364,6 @@ const change_owner = async (newOwnerID: Types.ObjectId , houseID: Types.ObjectId
 const remove_user_from_house = async (userID: Types.ObjectId, houseID: Types.ObjectId, ) =>{
 
     const current_owner = await Promise.resolve(this_module.find_owner(houseID));
-    console.log("result is ", await this_module.is_in_house(houseID,userID));
-    console.log("result is ", ! await this_module.is_in_house(houseID,userID));
 
     try{
         if(! await this_module.is_in_house(houseID, userID)){
