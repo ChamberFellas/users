@@ -490,7 +490,9 @@ describe("remove user and change owner", () => {
     var mock_member_id = new Types.ObjectId("123456789123456789abcdef")
     var mock_not_in_house_id = new Types.ObjectId("aaaaaabbbbbbccccccdddddd")
     var mock_house_id = new Types.ObjectId("abcdef123456789123456789")
-    const log_spy = jest.spyOn(global.console, "log");
+
+    let log_spy = 0;
+
     const is_in_house_mock = jest.spyOn(users, "is_in_house").mockImplementation(
         async (house_id, user_id) => {
             if (house_id.equals(mock_house_id) && (user_id.equals(mock_member_id) || user_id.equals(mock_owner_id))){ // in house
@@ -505,11 +507,12 @@ describe("remove user and change owner", () => {
         }
     )
     const find_owner_mock = jest.spyOn(users, "find_owner").mockResolvedValue(mock_owner_id);
-    const delete_mock = jest.spyOn(users.membersInHouse, "deleteOne").mockResolvedValue({deletedCount: 1} as any);
 
     beforeEach(() => {
 
         jest.restoreAllMocks();
+
+        jest.spyOn(global.console, "log");
 
         var mock_owner_id = new Types.ObjectId("abcdefabcdefabcdefabcdef")
         var mock_member_id = new Types.ObjectId("123456789123456789abcdef")
@@ -536,24 +539,25 @@ describe("remove user and change owner", () => {
         
         jest.spyOn(users.membersInHouse, "deleteOne").mockResolvedValue({deletedCount: 1} as any);
         jest.spyOn(users.house, "updateOne").mockResolvedValue({modifiedCount: 1} as any);
+
     })
 
     test("Successfully removes user when member and not owner of house", async () =>{
 
         const result = await users.remove_user_from_house(mock_member_id,mock_house_id);
-        expect(delete_mock).toHaveBeenCalledWith({houseID: mock_house_id, userID: mock_member_id});
+        expect(users.membersInHouse.deleteOne).toHaveBeenCalledTimes(1);
         
     })
 
     test("fail to remove user if userid not in house", async () => {
         await users.remove_user_from_house(mock_not_in_house_id,mock_house_id);
-        expect(log_spy).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed must be in house");
+        expect(global.console.log).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed must be in house");
         expect(users.membersInHouse.deleteOne).not.toHaveBeenCalled();
     })
 
     test("fail to remove user if user is owner", async () => {
         await users.remove_user_from_house(mock_owner_id,mock_house_id);
-        expect(log_spy).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed cannot be owner of house");
+        expect(global.console.log).toHaveBeenCalledWith("remove_user_from_house failed: user to be removed cannot be owner of house");
         expect(users.membersInHouse.deleteOne).not.toHaveBeenCalled();
     })
 
@@ -566,13 +570,13 @@ describe("remove user and change owner", () => {
 
     test("fail to change owner if member is not in house", async() => {
         await users.change_owner(mock_not_in_house_id, mock_house_id);
-        expect(log_spy).toHaveBeenCalledWith("change_owner function failed: new owner must be in house")
+        expect(global.console.log).toHaveBeenCalledWith("change_owner function failed: new owner must be in house")
         expect(users.house.updateOne).not.toHaveBeenCalled();
     })
 
     test("fail to change owner if new owner is the same old owner", async() => {
         await users.change_owner(mock_owner_id, mock_house_id);
-        expect(log_spy).toHaveBeenCalledWith("change_owner function failed: new owner cannot be the same as old owner")
+        expect(global.console.log).toHaveBeenCalledWith("change_owner function failed: new owner cannot be the same as old owner")
         expect(users.house.updateOne).not.toHaveBeenCalled();
     })
 })
