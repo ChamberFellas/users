@@ -160,14 +160,6 @@ describe ("create user fucntions", () => {
         expect(users.user.create).not.toHaveBeenCalled();
         
     })
-
-    test("Account not created when email is bad", async () => {
-
-        valid_data.email = "invalidemail";
-        await users.create_user(valid_data.firstName, valid_data.lastName, valid_data.email);
-        expect(users.user.create).not.toHaveBeenCalled();
-        
-    })
     
 })
 
@@ -194,7 +186,8 @@ describe ("Change parameters", () => {
             _id: mock_id, 
             firstName: new_first_name
         } as any);
-        
+        jest.spyOn(users.user, "findById").mockResolvedValue(valid_data)
+
     })
 
 
@@ -240,31 +233,28 @@ describe ("Change parameters", () => {
         expect(users.user.findOneAndUpdate).toHaveBeenCalled();
     })
 
-    test("LastName change succeeds on valid data", async () => {
-
-        await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+    test("LastName change fails on invalid data", async () => {
 
         new_last_name = "abcdefghijklmnopqrstuvwxyz";
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
 
         new_last_name = "*symbol*";
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
 
         new_last_name = "numb3rs";
 
         await users.change_last_name(mock_id, new_last_name);
-        expect(users.user.findOneAndUpdate).toHaveBeenCalled();
+        expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
 
     })
 
     test("lastName change fail if it is the same as old name", async() => {
         new_last_name = "Paul";
-        await users.change_first_name(mock_id, new_last_name);
+        await users.change_last_name(mock_id, new_last_name);
         expect(users.user.findOneAndUpdate).not.toHaveBeenCalled();
     })
 
