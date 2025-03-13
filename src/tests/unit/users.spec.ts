@@ -358,10 +358,6 @@ describe ("house creation", () => {
     })
 })
 
-// todo:
-// find owner
-
-// is owner
 
 describe("is owner", () => {
 
