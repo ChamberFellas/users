@@ -138,52 +138,6 @@ async function change_email(userID: Types.ObjectId, new_email: string){
     }
 }
 
-/*
-
-const delete_user = async (userID: Types.ObjectId) => {
-
-    try{
-
-        // ensure user is not an owner of a particular house
-
-        let is_an_owner = false;
-
-        // PIECE OF SHIT CODE DOESN'T WORK AND I DO NOT KNOW WHY
-        // seems to be compatiblity issues with houseID and Types.ObjectID. 
-
-        // Code is meant to ensure that the user being deleted is not an owner of a house
-
-        
-
-        const belongs_to_house = await membersInHouse.find(
-            {userID: userID},
-            {houseID: 1}
-        );
-
-        for (let i = 0; i < belongs_to_house.length; i++){
-
-            const houseID = belongs_to_house[i].houseID;
-            const house_check = await is_owner(houseID, userID);
-            if (house_check){
-                console.log("delete_user function failed: user to be deleted cannot be owner of house");
-                is_an_owner = true;
-                break;
-            }
-        }
-
-        
-        if (!is_an_owner){
-            const result = await user.deleteOne({_id: userID});
-            console.log("User successfully deleted");
-        }
-    }
-    catch(error){
-        console.log("delete_user function failed",error);
-    }
-}
-
-*/
-
 async function delete_user(user_id: Types.ObjectId){
 
     const house_ids = await membersInHouse.find({user_id: user_id}).select("house_id").lean()
