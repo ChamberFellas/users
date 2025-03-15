@@ -52,3 +52,28 @@ app.get('/get-email/:userID', async (req: Request, res: Response) => {
 
 
 
+// endpoints for recieving all people in a house
+
+app.get('/get-all-users-in-house/:houseID', async (req: Request, res: Response) => {
+  try {
+      const { houseID } = req.params; // Extract houseID from URL
+      if (!Types.ObjectId.isValid(houseID)) {
+          res.status(400).json({ error: "Invalid houseID" });
+          return;
+      }
+      const people = await user_module.get_all_users_in_house(new Types.ObjectId(houseID));
+      
+      if (!people) {
+          res.status(404).json({ error: "House not found" });
+          return;
+      }
+
+      res.json(people); // Return the people
+      return;
+  } catch (error) {
+      console.error("Error fetching people:", error);
+      res.status(500).json({ error: "Internal server error" });
+      return;
+  }
+});
+
