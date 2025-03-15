@@ -77,3 +77,22 @@ app.get('/get-all-users-in-house/:houseID', async (req: Request, res: Response) 
   }
 });
 
+app.get("check_if_owner/:userID/:houseID", async (req: Request, res: Response) => {
+
+  try {
+    const { userID, houseID } = req.params; // Extract userID and houseID from URL
+    if (!Types.ObjectId.isValid(userID) || !Types.ObjectId.isValid(houseID)) {
+        res.status(400).json({ error: "Invalid userID or houseID" });
+        return;
+    }
+    const is_owner = await user_module.is_owner(new Types.ObjectId(userID), new Types.ObjectId(houseID));
+    res.json({ is_owner }); // Return the people
+    return;
+  } catch (error) {
+    console.error("Error fetching people:", error);
+    res.status(500).json({ error: "Internal server error" });
+    return;
+  }
+
+});
+
