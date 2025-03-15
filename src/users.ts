@@ -71,6 +71,18 @@ async function create_user(firstName: string, lastName: string, email: string){
 
 }
 
+// get user
+
+async function get_user(userID: Types.ObjectId){
+    try{
+        const user_doc = await user.findById(userID);
+        return user_doc;
+    }
+    catch(error){
+        console.log("get_user function failed", error);
+    }
+}
+
 // change first name
 
 async function change_first_name(userID: Types.ObjectId, new_first_name: string){
@@ -167,7 +179,7 @@ async function delete_user(user_id: Types.ObjectId){
 }
 
 
-export {user,validate_email, validate_names, create_user, change_first_name, change_last_name, change_email};
+export {user,validate_email, validate_names, create_user, change_first_name, change_last_name, change_email, get_user, delete_user};
 
 // HOUSE RELATED
 
