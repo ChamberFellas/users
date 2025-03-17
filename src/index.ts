@@ -50,8 +50,6 @@ app.get('/get-email/:userID', async (req: Request, res: Response) => {
   }
 });
 
-
-
 // endpoints for recieving all people in a house
 
 app.get('/get-all-users-in-house/:houseID', async (req: Request, res: Response) => {
@@ -93,6 +91,9 @@ app.get("check_if_owner/:userID/:houseID", async (req: Request, res: Response) =
     res.status(500).json({ error: "Internal server error" });
     return;
   }
+
+  
+
 
 });
 
