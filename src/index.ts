@@ -75,7 +75,7 @@ app.get('/get-all-users-in-house/:houseID', async (req: Request, res: Response) 
   }
 });
 
-app.get("check_if_owner/:userID/:houseID", async (req: Request, res: Response) => {
+app.get("check-if-owner/:userID/:houseID", async (req: Request, res: Response) => {
 
   try {
     const { userID, houseID } = req.params; // Extract userID and houseID from URL
@@ -91,9 +91,43 @@ app.get("check_if_owner/:userID/:houseID", async (req: Request, res: Response) =
     res.status(500).json({ error: "Internal server error" });
     return;
   }
+});
 
-  
+app.get("remove-user-from-house/:userID/:houseID/:user_making_req_ID", async (req: Request, res: Response) => {
 
+  try {
+      const { userID, houseID, user_making_reqID } = req.params; // Extract userID and houseID from URL
+      if (!Types.ObjectId.isValid(userID) || !Types.ObjectId.isValid(houseID) || !Types.ObjectId.isValid(user_making_reqID)) {
+          res.status(400).json({ error: "Error parsing IDs" });
+          return;
+      }
+      const is_owner = await user_module.is_owner(new Types.ObjectId(user_making_reqID), new Types.ObjectId(houseID));
+      if (!is_owner) {
+          res.status(401).json({ error: "User is not the owner of the house" });
+          return;
+      }
+      else if(false){ // add auth endpoint here
+        res.status(401).json({ error: "User is not authenticated" });
+        return;
+      }
+      else{
 
+        try{
+          await user_module.remove_user_from_house(new Types.ObjectId(userID), new Types.ObjectId(houseID));
+        }
+        catch{
+          res.status(401).json({ error: "Faield to remove user from house"})
+        }
+
+        // send notifs here
+        const people = await user_module.get_all_users_in_house(new Types.ObjectId(houseID));
+        // send notifs to all of these people that this user was removed.
+
+      }
+    } catch (error) {
+      console.error("Error fetching people:", error);
+      res.status(500).json({ error: "Internal server error" });
+      return;
+    }
 });
 
