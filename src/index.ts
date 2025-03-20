@@ -7,6 +7,8 @@ import router from "./routes";
 import * as user_module from "./users";
 import {connectDB, disconnectDB} from "./database";
 
+import axios from "axios";
+
 export const app = express();
 
 app.use(express.json());
@@ -93,15 +95,17 @@ app.get("check-if-owner/:userID/:houseID", async (req: Request, res: Response) =
   }
 });
 
-app.get("remove-user-from-house/:userID/:houseID/:user_making_req_ID", async (req: Request, res: Response) => {
+app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID", async (req: Request, res: Response) => {
 
   try {
       const { userID, houseID, user_making_reqID } = req.params; // Extract userID and houseID from URL
       if (!Types.ObjectId.isValid(userID) || !Types.ObjectId.isValid(houseID) || !Types.ObjectId.isValid(user_making_reqID)) {
+          console.log("hello :D")
           res.status(400).json({ error: "Error parsing IDs" });
           return;
       }
       const is_owner = await user_module.is_owner(new Types.ObjectId(user_making_reqID), new Types.ObjectId(houseID));
+      console.log("Passed owner check")
       if (!is_owner) {
           res.status(401).json({ error: "User is not the owner of the house" });
           return;
@@ -111,16 +115,20 @@ app.get("remove-user-from-house/:userID/:houseID/:user_making_req_ID", async (re
         return;
       }
       else{
+        console.log("Passed if statements")
 
         try{
           await user_module.remove_user_from_house(new Types.ObjectId(userID), new Types.ObjectId(houseID));
+          console.log("passed house removal")
         }
         catch{
-          res.status(401).json({ error: "Faield to remove user from house"})
+          res.status(401).json({ error: "Failed to remove user from house"})
+          return;
         }
 
         // send notifs here
         const people = await user_module.get_all_users_in_house(new Types.ObjectId(houseID));
+        console.log("Passed people check")
         // send notifs to all of these people that this user was removed.
 
       }
@@ -129,5 +137,12 @@ app.get("remove-user-from-house/:userID/:houseID/:user_making_req_ID", async (re
       res.status(500).json({ error: "Internal server error" });
       return;
     }
+    console.log("made it to end")
+    res.status(200).json({message: "User removed successfully"})
+    return;
 });
 
+
+// All imortant services 
+
+// copy finns code :)

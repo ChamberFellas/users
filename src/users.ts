@@ -43,31 +43,37 @@ function validate_names(name: string){ // ensure name does not contain numbers o
 
 async function create_user(firstName: string, lastName: string, email: string){
 
-    const userData = {
-        firstName,
-        lastName,
-        email,
-        dateCreated: new Date() // gets today's date
-    };
+    try{
+        const userData = {
+            firstName,
+            lastName,
+            email,
+            dateCreated: new Date() // gets today's date
+        };
+    
+        if (firstName.length < 1 || firstName.length > 15 || !(await validate_names(firstName))){
+            console.log("add_user function failed: Invalid firstname");
+        }
+        else if (lastName.length < 1 || lastName.length > 15 || !(await validate_names(lastName))){
+            console.log("add_user function failed: Invalid lastName");
+        }
+        else if (!validate_email(email)){
+            console.log("add_user function failed: Invalid email");
+        }
+        else{
+            try{
+                const new_user = await user.create(userData);
+                console.log(" Added new user ", new_user);
+            }
+            catch(error){
+                console.log("add_user function failed", error);
+            }
+        }  
+    }
+    catch(error){
+        console.log("add_user function failed", error);
+    }
 
-    if (firstName.length < 1 || firstName.length > 15 || !(await validate_names(firstName))){
-        console.log("add_user function failed: Invalid firstname");
-    }
-    else if (lastName.length < 1 || lastName.length > 15 || !(await validate_names(lastName))){
-        console.log("add_user function failed: Invalid lastName");
-    }
-    else if (!validate_email(email)){
-        console.log("add_user function failed: Invalid email");
-    }
-    else{
-        try{
-            const new_user = await user.create(userData);
-            console.log(" Added new user ", new_user);
-        }
-        catch(error){
-            console.log("add_user function failed", error);
-        }
-    }   
 
 }
 
