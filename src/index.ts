@@ -23,6 +23,7 @@ if (process.env.NODE_ENV !== "test") {
   if (!process.env.PORT) {
     console.error("PORT is not defined");
     console.log("Setting port to default: 3000");
+    console.log("bleh")
   }
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
@@ -36,6 +37,7 @@ connectDB();
 app.get('/get-email/:userID', async (req: Request, res: Response) => {
   try {
       const { userID } = req.params; // Extract userID from URL
+      console.log("piece of shit")
       console.log(userID.toString)
       /*
       if (!Types.ObjectId.isValid(userID)) {

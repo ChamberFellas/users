@@ -62,7 +62,7 @@ async function create_user(firstName: string, lastName: string, email: string){
         }
         else{
             try{
-                const new_user = await user.create(userData);
+                await user.create(userData);
                 return "Added new user";
             }
             catch(error){
