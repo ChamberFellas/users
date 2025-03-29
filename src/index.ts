@@ -36,6 +36,7 @@ connectDB();
 app.get('/get-email/:userID', async (req: Request, res: Response) => {
   try {
       const { userID } = req.params; // Extract userID from URL
+      console.log(userID.toString)
       /*
       if (!Types.ObjectId.isValid(userID)) {
           res.status(400).json({ error: "Invalid userID" });
