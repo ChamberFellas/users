@@ -3,32 +3,7 @@ import {connectDB, disconnectDB} from "./database";
 export const testing = false;
 import * as this_module from "./users";
 import { transpileModule } from "typescript";
-
-if (!testing){
-    connectDB();
-}
-
-const usersSchema = new mongoose.Schema({
-    firstName: String,
-    lastName: String,
-    email: String,
-    dateCreated: Date
-});
-
-const houseSchema = new mongoose.Schema({
-    ownerID: {type: Types.ObjectId, ref: "Users" },
-    houseName: String,
-    dateCreated: Date, 
-})
-
-const membersInHouseSchema = new mongoose.Schema({
-    houseID: {type: Types.ObjectId, ref: "House"},
-    userID: {type: Types.ObjectId, ref: "Users"}
-})
-
-const user = mongoose.model('Users', usersSchema);
-const house = mongoose.model('House', houseSchema);
-const membersInHouse = mongoose.model('membersInHouse', membersInHouseSchema);
+import {user, house, membersInHouse} from "./models";
 
 async function validate_email(email: string) {
     const email_already_exists = !!(await user.findOne({ email }));
@@ -44,6 +19,8 @@ function validate_names(name: string){ // ensure name does not contain numbers o
 async function create_user(firstName: string, lastName: string, email: string){
 
     try{
+
+        console.log("are we getting here???")
         const userData = {
             firstName,
             lastName,
@@ -62,7 +39,15 @@ async function create_user(firstName: string, lastName: string, email: string){
         }
         else{
             try{
-                await user.create(userData);
+                console.log("hi??")
+                const new_user = new user(userData)
+                try{
+                    const status = await new_user.save()
+                }
+                catch (error){
+                    console.error(error)
+                }
+                
                 return "Added new user";
             }
             catch(error){
@@ -73,8 +58,6 @@ async function create_user(firstName: string, lastName: string, email: string){
     catch(error){
         return "add_user function failed" + error
     }
-
-
 }
 
 // get user
@@ -187,7 +170,7 @@ async function delete_user(user_id: Types.ObjectId){
 }
 
 
-export {user,validate_email, validate_names, create_user, change_first_name, change_last_name, change_email, get_user, delete_user};
+export {validate_email, validate_names, create_user, change_first_name, change_last_name, change_email, get_user, delete_user};
 
 // HOUSE RELATED
 
@@ -383,4 +366,4 @@ async function add_user_to_house(userID: Types.ObjectId, houseID: Types.ObjectId
     }
 }
 
-export {house, membersInHouse, create_house, delete_house, get_all_users_in_house, find_owner, is_owner, is_in_house, change_owner, remove_user_from_house, add_user_to_house}
+export { create_house, delete_house, get_all_users_in_house, find_owner, is_owner, is_in_house, change_owner, remove_user_from_house, add_user_to_house}

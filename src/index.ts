@@ -17,13 +17,14 @@ app.use(express.json());
 
 app.use(router);
 
-mongoose.connect("mongodb://localhost:27017/User_authentication")
+const AUTH_IP = "172.26.107.70";
+
+// mongoose.connect("mongodb://localhost:27017/User_authentication")
 
 if (process.env.NODE_ENV !== "test") {
   if (!process.env.PORT) {
     console.error("PORT is not defined");
     console.log("Setting port to default: 3000");
-    console.log("bleh")
   }
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
@@ -31,22 +32,15 @@ if (process.env.NODE_ENV !== "test") {
   });
 }
 
-connectDB();
-
 // Define the endpoint to fetch an email by userID
 app.get('/get-email/:userID', async (req: Request, res: Response) => {
   try {
       const { userID } = req.params; // Extract userID from URL
-      console.log("piece of shit")
-      console.log(userID.toString)
-      /*
       if (!Types.ObjectId.isValid(userID)) {
           res.status(400).json({ error: "Invalid userID" });
           return;
       }
-      */
       const user_details = await user_module.get_user(new Types.ObjectId(userID));
-      
       if (!user_details) {
           res.status(404).json({ error: "User not found" });
           return;
@@ -108,7 +102,7 @@ app.get("check-if-owner/:userID/:houseID", async (req: Request, res: Response) =
 
 app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID",  async (req: Request, res: Response) => {
 
-  const AUTH_SERVICE_URL = 'http://auth-service-url/auth/internal/validate';
+  const AUTH_SERVICE_URL = 'http://' + AUTH_IP + ':8080/auth/internal/validate';
 
   try {
       const { userID, houseID, user_making_reqID } = req.params; // Extract userID and houseID from URL
@@ -157,7 +151,7 @@ app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID",  async (r
 
 // FRONTEND ENDPOINT
 
-app.get("create-user/:first_name/:last_name/:", async (req: Request, res: Response) => {
+app.get("create-user/:first_name/:last_name/:email", async (req: Request, res: Response) => {
 
   try{
     const {first_name, last_name, email} = req.params;
@@ -225,6 +219,8 @@ app.get("add-user-to-house/:userID/:houseID", async (req: Request, res: Response
   }
 })
 
+app.get("forward-token")
+
 /*
 
 app.get("create_house",async (req: Request, res: Response) => {
@@ -235,15 +231,19 @@ app.get("create_house",async (req: Request, res: Response) => {
 
 */
 
-app.listen(3000, "0.0.0.0", () =>{
-  console.log('server running on port 3000')
-})
+
+async function startServer() {
+  app.listen(3000, "0.0.0.0", () =>{
+    console.log('server running on port 3000')
+  })
+  await connectDB();
+  //user_module.add_user_to_house(new Types.ObjectId("67e82200e2df279821581aab"), )
+  
+}
+startServer();
 
 
 // local IP address 172.26.53.145
-
-
-
 
 
 // FRONT END ENDPOINTS
