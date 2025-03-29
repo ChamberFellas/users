@@ -52,26 +52,26 @@ async function create_user(firstName: string, lastName: string, email: string){
         };
     
         if (firstName.length < 1 || firstName.length > 15 || !(await validate_names(firstName))){
-            console.log("add_user function failed: Invalid firstname");
+            return "add_user function failed: Invalid firstname"
         }
         else if (lastName.length < 1 || lastName.length > 15 || !(await validate_names(lastName))){
-            console.log("add_user function failed: Invalid lastName");
+            return "add_user function failed: Invalid lastName"
         }
         else if (!validate_email(email)){
-            console.log("add_user function failed: Invalid email");
+            return "add_user function failed: Invalid email"
         }
         else{
             try{
                 const new_user = await user.create(userData);
-                console.log(" Added new user ", new_user);
+                return "Added new user";
             }
             catch(error){
-                console.log("add_user function failed", error);
+                return "add_user function failed" + error
             }
         }  
     }
     catch(error){
-        console.log("add_user function failed", error);
+        return "add_user function failed" + error
     }
 
 
@@ -98,18 +98,20 @@ async function change_first_name(userID: Types.ObjectId, new_first_name: string)
 
         if (new_first_name.length < 1 || new_first_name.length > 15 || !validate_names(new_first_name) || (user_doc && user_doc.firstName === (new_first_name) )){
             console.log("change_first_name function failed: new name is invalid")
+            return "invalid"
         }
         else{
-            console.log("valid name");
             const result = await user.findOneAndUpdate(
                 {_id : userID},
                 {$set: {firstName: new_first_name}}
             );
+            console.log("valid name");
+            return "valid"
         }
     }
     catch(error){
         console.log("change_first_name function failed",error);
-
+        return "fail"
     }
 }
 
@@ -359,4 +361,26 @@ const remove_user_from_house = async (userID: Types.ObjectId, houseID: Types.Obj
     }
 }
 
-export {house, membersInHouse, create_house, delete_house, get_all_users_in_house, find_owner, is_owner, is_in_house, change_owner, remove_user_from_house}
+// add user to house
+
+async function add_user_to_house(userID: Types.ObjectId, houseID: Types.ObjectId){
+    try{
+        let in_house = await this_module.is_in_house(houseID, userID)
+        if (in_house){
+            console.log("User is already in house")
+            return "invalid"
+        }
+        else{
+            await membersInHouse.create(
+                {houseID: houseID,userID: userID},
+            )
+            return "valid"
+        }
+    }
+    catch(error){
+        console.log("add_user_to_house failed:", error);
+        return "fail"
+    }
+}
+
+export {house, membersInHouse, create_house, delete_house, get_all_users_in_house, find_owner, is_owner, is_in_house, change_owner, remove_user_from_house, add_user_to_house}

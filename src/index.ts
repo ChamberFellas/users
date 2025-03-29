@@ -1,4 +1,4 @@
-import express from "express";
+import express, {NextFunction} from "express";
 import { Request, Response } from "express";
 import mongoose, {Types} from "mongoose";
 import dotenv from "dotenv";
@@ -77,6 +77,8 @@ app.get('/get-all-users-in-house/:houseID', async (req: Request, res: Response) 
   }
 });
 
+// check if owner
+
 app.get("check-if-owner/:userID/:houseID", async (req: Request, res: Response) => {
 
   try {
@@ -95,7 +97,9 @@ app.get("check-if-owner/:userID/:houseID", async (req: Request, res: Response) =
   }
 });
 
-app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID", async (req: Request, res: Response) => {
+app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID",  async (req: Request, res: Response) => {
+
+  const AUTH_SERVICE_URL = 'http://auth-service-url/auth/internal/validate';
 
   try {
       const { userID, houseID, user_making_reqID } = req.params; // Extract userID and houseID from URL
@@ -110,7 +114,7 @@ app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID", async (re
           res.status(401).json({ error: "User is not the owner of the house" });
           return;
       }
-      else if(false){ // add auth endpoint here
+      else if(!(await axios.post(AUTH_SERVICE_URL, {user_making_reqID} ))){ // add auth endpoint here (VERY LIKELY NEEDS FINNS MIDDLEWARE BUT IDK HOW THIS SHIT WORKS)
         res.status(401).json({ error: "User is not authenticated" });
         return;
       }
@@ -142,7 +146,78 @@ app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID", async (re
     return;
 });
 
+// FRONTEND ENDPOINT
 
-// All imortant services 
+app.get("create-user/:first_name/:last_name/:", async (req: Request, res: Response) => {
 
-// copy finns code :)
+  try{
+    const {first_name, last_name, email} = req.params;
+    let status = await user_module.create_user(first_name,last_name,email)
+    if (status === "Added new user"){
+      res.status(401).json({error: status})
+      return
+    }
+    res.status(200).json({message: status});
+    return
+  }
+  catch{
+    res.status(401).json({error: "Failed to create user"})
+    return
+
+  }
+
+})
+
+app.get("change-user-details/:userID/:param/:new_value", async (req: Request, res: Response) => {
+  try{
+    let status;
+    const { userID, param, new_value} = req.params;
+    if (param === "first_name"){
+      status = await user_module.change_first_name(new Types.ObjectId(userID), new_value)
+    }
+    else if(param === "last_name"){
+      status = await user_module.change_last_name(new Types.ObjectId(userID), new_value)
+    }
+    else if(param === "email"){
+      status = await user_module.change_email(new Types.ObjectId(userID), new_value)
+    }
+    else{
+      res.status(401).json({error: "Invalid parameter supplied"})
+      return
+    }
+    if (status === "valid"){
+      res.status(200).json({message: status})
+    }
+    else{
+      res.status(401).json({error: status})
+    }
+    return
+  }
+  catch(error){
+    res.status(401).json({error: error})
+  }
+})
+
+app.get("add-user-to-house/:userID/:houseID", async (req: Request, res: Response) => {
+  try{
+    const{userID, houseID} = req.params;
+    let status = await user_module.add_user_to_house(new Types.ObjectId(userID), new Types.ObjectId(houseID))
+    if (status === "valid"){
+      res.status(200).json({message: status})
+    }
+    else{
+      res.status(401).json({error: status})
+    }
+    return;
+  }
+  catch(error){
+    res.status(401).json({error: error})
+    return
+  }
+})
+
+
+// FRONT END ENDPOINTS
+
+// add user to house
+
