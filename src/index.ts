@@ -17,6 +17,8 @@ app.use(express.json());
 
 app.use(router);
 
+mongoose.connect("mongodb://localhost:27017/User_authentication")
+
 if (process.env.NODE_ENV !== "test") {
   if (!process.env.PORT) {
     console.error("PORT is not defined");
@@ -34,10 +36,12 @@ connectDB();
 app.get('/get-email/:userID', async (req: Request, res: Response) => {
   try {
       const { userID } = req.params; // Extract userID from URL
+      /*
       if (!Types.ObjectId.isValid(userID)) {
           res.status(400).json({ error: "Invalid userID" });
           return;
       }
+      */
       const user_details = await user_module.get_user(new Types.ObjectId(userID));
       
       if (!user_details) {
