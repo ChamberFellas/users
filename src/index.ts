@@ -1,5 +1,7 @@
-import express, {NextFunction} from "express";
-import { Request, Response } from "express";
+
+import express from "express"
+import { Request, Response} from "express";
+
 import mongoose, {Types} from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
@@ -215,6 +217,26 @@ app.get("add-user-to-house/:userID/:houseID", async (req: Request, res: Response
     return
   }
 })
+
+/*
+
+app.get("create_house",async (req: Request, res: Response) => {
+  try{
+    let status = user_module.create_house(ownerID)
+  }
+})
+
+*/
+
+app.listen(3000, "0.0.0.0", () =>{
+  console.log('server running on port 3000')
+})
+
+
+// local IP address 172.26.53.145
+
+
+
 
 
 // FRONT END ENDPOINTS
