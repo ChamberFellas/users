@@ -6,13 +6,11 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 export async function connectDB() {
 
-    console.log("hi");
-
     const user = process.env.DB_USER;
     const password = process.env.DB_PASSWORD;
 
-
-    mongoose.connect('mongodb+srv://' + user + ':' + password + '@bills.jtyzd.mongodb.net/?retryWrites=true&w=majority&appName=Bills')
+    try{
+        await mongoose.connect('mongodb+srv://' + user + ':' + password + '@bills.jtyzd.mongodb.net/Users?retryWrites=true&w=majority&appName=Bills')
         .then(() => {
             console.log("Connected to db!")
         })
@@ -20,6 +18,18 @@ export async function connectDB() {
             console.log("error",error)
         });
 
+    }
+    catch{
+        console.log("are we here?")
+        await mongoose.disconnect()
+        await mongoose.connect('mongodb+srv://' + user + ':' + password + '@bills.jtyzd.mongodb.net/Users?retryWrites=true&w=majority&appName=Bills')
+        .then(() => {
+            console.log("Connected to db!")
+        })
+        .catch((error) => {
+            console.log("error",error)
+        });
+    }
 }
 
 export async function disconnectDB() {
