@@ -20,7 +20,6 @@ async function create_user(firstName: string, lastName: string, email: string){
 
     try{
 
-        console.log("are we getting here???")
         const userData = {
             firstName,
             lastName,
