@@ -218,8 +218,9 @@ app.get("add-user-to-house/:userID/:houseID", async (req: Request, res: Response
   }
 })
 
-app.get("forward-token")
-
+app.get("forward-token", (req: Request, res: Response) => {
+  res.status(200).json({message: "Forward token route is under construction"});
+});
 /*
 
 app.get("create_house",async (req: Request, res: Response) => {
