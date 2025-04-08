@@ -151,8 +151,7 @@ app.get("/remove-user-from-house/:userID/:houseID/:user_making_reqID",  async (r
 
 // FRONTEND ENDPOINT
 
-app.get("create-user/:first_name/:last_name/:email", async (req: Request, res: Response) => {
-
+app.get("/create-user/:first_name/:last_name/:email", async (req: Request, res: Response) => {
   try{
     const {first_name, last_name, email} = req.params;
     let status = await user_module.create_user(first_name,last_name,email)
